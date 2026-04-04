@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-family: system-ui, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── スクロールバー（デスクトップ用フォールバック） ─────────────────────
+   フレットボードが min-width 以下の viewport に来たときのみ表示される。
+   細くて目立たないデザインにする。
+ */
+.fretboard-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.fretboard-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.fretboard-scroll::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.35);
+  border-radius: 2px;
+}
+.fretboard-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+/* Firefox */
+.fretboard-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
