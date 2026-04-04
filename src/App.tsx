@@ -11,6 +11,7 @@ import Fretboard from './components/Fretboard';
 import Legend from './components/Legend';
 import QuizDisplay from './components/QuizDisplay';
 import { useQuiz } from './hooks/useQuiz';
+import { POSITIONS } from './utils/positions';
 
 export default function App() {
   const [selectedRoot, setSelectedRoot] = useState('C');
@@ -19,9 +20,11 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [panelOpen, setPanelOpen] = useState(true);
   const [selectedTuning, setSelectedTuning] = useState<TuningKey>('standard');
+  const [selectedPosition, setSelectedPosition] = useState('all');
 
   const tuning = [...TUNINGS[selectedTuning]];
   const stringLabels = [...STRING_LABELS_BY_TUNING[selectedTuning]];
+  const currentPos = POSITIONS.find((p) => p.id === selectedPosition) ?? POSITIONS[0];
 
   const {
     isQuizMode,
@@ -144,11 +147,13 @@ export default function App() {
               selectedType={selectedType}
               displayMode={displayMode}
               selectedTuning={selectedTuning}
+              selectedPosition={selectedPosition}
               isQuizMode={isQuizMode}
               onRootChange={handleRootChange}
               onTypeChange={handleTypeChange}
               onDisplayModeChange={setDisplayMode}
               onTuningChange={handleTuningChange}
+              onPositionChange={setSelectedPosition}
               onQuizToggle={handleQuizToggle}
             />
 
@@ -198,6 +203,8 @@ export default function App() {
               activeFilter={activeFilter}
               tuning={tuning}
               stringLabels={stringLabels}
+              fretMin={currentPos.fretMin}
+              fretMax={currentPos.fretMax}
               isQuizMode={isQuizMode}
               onQuizFret={handleQuizFret}
               quizClickState={quizClickState}

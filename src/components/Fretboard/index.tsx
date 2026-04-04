@@ -17,6 +17,10 @@ interface Props {
   activeFilter: string;
   tuning: string[];
   stringLabels: string[];
+  /** 表示ポジションの最小フレット番号 */
+  fretMin?: number;
+  /** 表示ポジションの最大フレット番号 */
+  fretMax?: number;
   /** クイズモード中は true（ドット非表示・全フレットクリック可） */
   isQuizMode?: boolean;
   /** クイズモード中のフレットクリック通知 */
@@ -32,6 +36,8 @@ export default function Fretboard({
   activeFilter,
   tuning,
   stringLabels,
+  fretMin = 0,
+  fretMax = NUM_FRETS,
   isQuizMode = false,
   onQuizFret,
   quizClickState,
@@ -42,6 +48,13 @@ export default function Fretboard({
   const numStrings = tuning.length;
   const svgWidth = LEFT_MARGIN + (NUM_FRETS + 1) * FRET_WIDTH + 4;
   const svgHeight = TOP_MARGIN + numStrings * STRING_HEIGHT + BOTTOM_MARGIN;
+
+  /** フレット番号をSVG左端X座標に変換（フレット区間の左境界） */
+  function fretToX(fret: number): number {
+    return fret === 0 ? 0 : LEFT_MARGIN + (fret - 1) * FRET_WIDTH;
+  }
+
+  const isFiltered = fretMin !== 0 || fretMax !== NUM_FRETS;
 
   return (
     <div style={{ width: '100%', overflowX: 'auto' }} className="fretboard-scroll">
@@ -132,6 +145,34 @@ export default function Fretboard({
             }
           />
         ))}
+
+        {/* ポジションフェードオーバーレイ */}
+        {isFiltered && (
+          <>
+            {/* 左側フェード */}
+            {fretMin > 0 && (
+              <rect
+                x={0}
+                y={0}
+                width={fretToX(fretMin)}
+                height={svgHeight}
+                fill="rgba(15,17,23,0.82)"
+                style={{ pointerEvents: 'none' }}
+              />
+            )}
+            {/* 右側フェード */}
+            {fretMax < NUM_FRETS && (
+              <rect
+                x={fretToX(fretMax + 1)}
+                y={0}
+                width={svgWidth - fretToX(fretMax + 1)}
+                height={svgHeight}
+                fill="rgba(15,17,23,0.82)"
+                style={{ pointerEvents: 'none' }}
+              />
+            )}
+          </>
+        )}
       </svg>
     </div>
   );

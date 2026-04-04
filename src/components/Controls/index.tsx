@@ -4,17 +4,20 @@ import { ROOT_NOTES, CHORD_TYPES } from '../../lib/musicTheory';
 import { TUNINGS, TUNING_LABELS, type TuningKey } from '../../constants/tuning';
 import { useChordValidation } from '../../hooks/useChordValidation';
 import Tooltip from '../Tooltip';
+import { POSITIONS } from '../../utils/positions';
 
 interface Props {
   selectedRoot: string;
   selectedType: string;
   displayMode: DisplayMode;
   selectedTuning: TuningKey;
+  selectedPosition: string;
   isQuizMode: boolean;
   onRootChange: (root: string) => void;
   onTypeChange: (type: string) => void;
   onDisplayModeChange: (mode: DisplayMode) => void;
   onTuningChange: (key: TuningKey) => void;
+  onPositionChange: (id: string) => void;
   onQuizToggle: () => void;
 }
 
@@ -23,11 +26,13 @@ export default function Controls({
   selectedType,
   displayMode,
   selectedTuning,
+  selectedPosition,
   isQuizMode,
   onRootChange,
   onTypeChange,
   onDisplayModeChange,
   onTuningChange,
+  onPositionChange,
   onQuizToggle,
 }: Props) {
   const { validRoots, validTypes } = useChordValidation(selectedRoot, selectedType);
@@ -139,6 +144,34 @@ export default function Controls({
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* ポジション */}
+      <div>
+        <label className="text-xs text-slate-400 uppercase tracking-wider flex items-center mb-2">
+          ポジション
+          <Tooltip text="指板を練習しやすいポジション単位で表示します。「全体」で全フレットを確認できます。" />
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {POSITIONS.map((pos) => (
+            <button
+              key={pos.id}
+              onClick={() => onPositionChange(pos.id)}
+              className={`px-3 h-8 rounded-lg text-xs font-medium transition-colors ${
+                selectedPosition === pos.id
+                  ? 'text-black'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+              style={
+                selectedPosition === pos.id
+                  ? { backgroundColor: 'var(--accent)' }
+                  : {}
+              }
+            >
+              {pos.label}
+            </button>
+          ))}
         </div>
       </div>
 
