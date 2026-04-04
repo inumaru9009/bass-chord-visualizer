@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { DisplayMode } from '../../types/music';
 import { ROOT_NOTES, CHORD_TYPES } from '../../lib/musicTheory';
 import { TUNINGS, TUNING_LABELS, type TuningKey } from '../../constants/tuning';
@@ -30,35 +31,58 @@ export default function Controls({
   onQuizToggle,
 }: Props) {
   const { validRoots, validTypes } = useChordValidation(selectedRoot, selectedType);
+  const [tuningOpen, setTuningOpen] = useState(false);
 
   return (
     <div className="bg-slate-800 rounded-xl p-4 space-y-4">
 
-      {/* チューニング */}
+      {/* チューニング（折りたたみ） */}
       <div>
-        <label className="text-xs text-slate-400 uppercase tracking-wider flex items-center mb-2">
-          チューニング
+        <button
+          onClick={() => setTuningOpen((v) => !v)}
+          style={{
+            color: 'var(--text-muted)',
+            fontSize: '0.75rem',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          <span>{tuningOpen ? '▼' : '▶'}</span>
+          チューニング設定
           <Tooltip text="開放弦の音程を変えます。指板上の全音名・コード判定がリアルタイムで追従します。" />
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {(Object.keys(TUNINGS) as TuningKey[]).map((key) => (
-            <button
-              key={key}
-              onClick={() => onTuningChange(key)}
-              className={`px-3 h-8 rounded-lg text-xs font-medium transition-colors ${
-                selectedTuning === key
-                  ? 'text-black'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
-              style={
-                selectedTuning === key
-                  ? { backgroundColor: 'var(--accent)' }
-                  : {}
-              }
-            >
-              {TUNING_LABELS[key]}
-            </button>
-          ))}
+        </button>
+        <div
+          style={{
+            maxHeight: tuningOpen ? '120px' : '0',
+            overflow: 'hidden',
+            transition: 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          <div className="flex flex-wrap gap-2 pt-2">
+            {(Object.keys(TUNINGS) as TuningKey[]).map((key) => (
+              <button
+                key={key}
+                onClick={() => onTuningChange(key)}
+                className={`px-3 h-8 rounded-lg text-xs font-medium transition-colors ${
+                  selectedTuning === key
+                    ? 'text-black'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                style={
+                  selectedTuning === key
+                    ? { backgroundColor: 'var(--accent)' }
+                    : {}
+                }
+              >
+                {TUNING_LABELS[key]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
