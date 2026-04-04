@@ -26,7 +26,9 @@ export default function StringRow({
   tuning,
 }: Props) {
   const y = TOP_MARGIN + stringIndex * STRING_HEIGHT + STRING_HEIGHT / 2;
-  const stringThickness = 0.8 + stringIndex * 0.35;
+  // 1弦(G,index 0)=1.2px → 4弦(E,index 3)=3.5px に差別化
+  const STRING_THICKNESSES = [1.2, 1.8, 2.5, 3.5];
+  const stringThickness = STRING_THICKNESSES[stringIndex] ?? 1.5;
 
   return (
     <g>

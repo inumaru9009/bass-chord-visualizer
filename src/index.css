@@ -1,9 +1,22 @@
 @import "tailwindcss";
 
+/* ── CSS カスタムプロパティ ──────────────────────────────── */
+:root {
+  --bg-primary: #0f1117;
+  --bg-secondary: #181c27;
+  --bg-panel: #12151f;
+  --accent: #e8a84c;
+  --accent-hover: #c47d2a;
+  --text-primary: #e8e8e8;
+  --text-muted: #8892a4;
+  --border: rgba(255, 255, 255, 0.08);
+  --inlay-color: #b8964a;
+}
+
 body {
   margin: 0;
-  background: #0f172a;
-  color: #f1f5f9;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: system-ui, sans-serif;
 }
 
@@ -11,10 +24,187 @@ body {
   min-height: 100vh;
 }
 
-/* ── スクロールバー（デスクトップ用フォールバック） ─────────────────────
-   フレットボードが min-width 以下の viewport に来たときのみ表示される。
-   細くて目立たないデザインにする。
- */
+/* ── 2カラム レイアウト ─────────────────────────────────── */
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ── サイドパネル（モバイル: アコーディオン） ────────────── */
+.app-panel {
+  background: var(--bg-panel);
+  overflow: hidden;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  /* モバイルアコーディオン */
+  max-height: 0;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-panel.open {
+  max-height: 1200px;
+}
+
+.panel-inner {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* デスクトップ専用: パネル内閉じるボタン */
+.panel-close-row {
+  display: none;
+}
+
+/* モバイル: アコーディオントグルボタン */
+.accordion-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.accordion-toggle:hover {
+  background: #1e2535;
+  color: var(--text-primary);
+}
+
+/* デスクトップ: アコーディオントグル非表示 */
+
+/* ── 指板エリア ─────────────────────────────────────────── */
+.app-fretboard {
+  flex: 1;
+  padding: 12px;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* ── デスクトップ (768px+) ──────────────────────────────── */
+@media (min-width: 768px) {
+  .app-layout {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .app-body {
+    flex-direction: row;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  /* サイドバー: 幅アニメーション */
+  .app-panel {
+    max-height: none;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 280px;
+    opacity: 1;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease;
+  }
+
+  .app-panel:not(.open) {
+    width: 0;
+    opacity: 0;
+  }
+
+  /* open クラスの max-height 上書きを解除 */
+  .app-panel.open {
+    max-height: none;
+    width: 280px;
+    opacity: 1;
+  }
+
+  .panel-close-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-bottom: 4px;
+  }
+
+  .accordion-toggle {
+    display: none;
+  }
+
+  .app-fretboard {
+    flex: 1;
+    height: 100%;
+    overflow: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ── ヘッダーボタン ─────────────────────────────────────── */
+.panel-toggle-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.panel-toggle-btn:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.panel-close-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 11px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.panel-close-btn:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+/* ── スクロールバー（フレットボード横スクロール） ──────── */
 .fretboard-scroll::-webkit-scrollbar {
   height: 4px;
 }
@@ -28,9 +218,19 @@ body {
 .fretboard-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.6);
 }
-
-/* Firefox */
 .fretboard-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+
+/* サイドバー内スクロールバー */
+.app-panel::-webkit-scrollbar {
+  width: 4px;
+}
+.app-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.app-panel::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 2px;
 }

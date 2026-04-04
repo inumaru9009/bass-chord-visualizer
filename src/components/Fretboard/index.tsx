@@ -93,12 +93,12 @@ export default function Fretboard({
             const offset = STRING_HEIGHT * 0.8;
             return (
               <g key={fret}>
-                <circle cx={x} cy={midY - offset} r={4} fill="#1e293b" />
-                <circle cx={x} cy={midY + offset} r={4} fill="#1e293b" />
+                <circle cx={x} cy={midY - offset} r={5} fill="#b8964a" opacity={0.7} />
+                <circle cx={x} cy={midY + offset} r={5} fill="#b8964a" opacity={0.7} />
               </g>
             );
           }
-          return <circle key={fret} cx={x} cy={midY} r={4} fill="#1e293b" />;
+          return <circle key={fret} cx={x} cy={midY} r={5} fill="#b8964a" opacity={0.7} />;
         })}
 
         {/* 各弦 */}
