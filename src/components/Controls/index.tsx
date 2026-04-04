@@ -1,5 +1,6 @@
 import type { DisplayMode } from '../../types/music';
 import { ROOT_NOTES, CHORD_TYPES } from '../../lib/musicTheory';
+import { TUNINGS, TUNING_LABELS, type TuningKey } from '../../constants/tuning';
 import { useChordValidation } from '../../hooks/useChordValidation';
 import Tooltip from '../Tooltip';
 
@@ -7,23 +8,60 @@ interface Props {
   selectedRoot: string;
   selectedType: string;
   displayMode: DisplayMode;
+  selectedTuning: TuningKey;
+  isQuizMode: boolean;
   onRootChange: (root: string) => void;
   onTypeChange: (type: string) => void;
   onDisplayModeChange: (mode: DisplayMode) => void;
+  onTuningChange: (key: TuningKey) => void;
+  onQuizToggle: () => void;
 }
 
 export default function Controls({
   selectedRoot,
   selectedType,
   displayMode,
+  selectedTuning,
+  isQuizMode,
   onRootChange,
   onTypeChange,
   onDisplayModeChange,
+  onTuningChange,
+  onQuizToggle,
 }: Props) {
   const { validRoots, validTypes } = useChordValidation(selectedRoot, selectedType);
 
   return (
     <div className="bg-slate-800 rounded-xl p-4 space-y-4">
+
+      {/* チューニング */}
+      <div>
+        <label className="text-xs text-slate-400 uppercase tracking-wider flex items-center mb-2">
+          チューニング
+          <Tooltip text="開放弦の音程を変えます。指板上の全音名・コード判定がリアルタイムで追従します。" />
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(TUNINGS) as TuningKey[]).map((key) => (
+            <button
+              key={key}
+              onClick={() => onTuningChange(key)}
+              className={`px-3 h-8 rounded-lg text-xs font-medium transition-colors ${
+                selectedTuning === key
+                  ? 'text-black'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+              style={
+                selectedTuning === key
+                  ? { backgroundColor: 'var(--accent)' }
+                  : {}
+              }
+            >
+              {TUNING_LABELS[key]}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ルート音 */}
       <div>
         <label className="text-xs text-slate-400 uppercase tracking-wider flex items-center mb-2">
@@ -101,6 +139,20 @@ export default function Controls({
             </button>
           ))}
         </div>
+      </div>
+
+      {/* クイズモード */}
+      <div>
+        <button
+          onClick={onQuizToggle}
+          className={`w-full h-10 rounded-xl text-sm font-bold transition-colors ${
+            isQuizMode
+              ? 'bg-green-600 text-white hover:bg-green-700'
+              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+          }`}
+        >
+          {isQuizMode ? '✅ クイズモード終了' : '🎯 クイズモード開始'}
+        </button>
       </div>
     </div>
   );

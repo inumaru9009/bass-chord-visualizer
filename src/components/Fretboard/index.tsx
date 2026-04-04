@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { DisplayMode } from '../../types/music';
+import type { QuizClickState } from '../../hooks/useQuiz';
 import StringRow from './StringRow';
 import {
   FRET_WIDTH, STRING_HEIGHT, LEFT_MARGIN, TOP_MARGIN, BOTTOM_MARGIN,
@@ -16,6 +17,12 @@ interface Props {
   activeFilter: string;
   tuning: string[];
   stringLabels: string[];
+  /** クイズモード中は true（ドット非表示・全フレットクリック可） */
+  isQuizMode?: boolean;
+  /** クイズモード中のフレットクリック通知 */
+  onQuizFret?: (stringIndex: number, fret: number) => void;
+  /** クイズフィードバック（アニメーション表示用） */
+  quizClickState?: QuizClickState | null;
 }
 
 export default function Fretboard({
@@ -25,6 +32,9 @@ export default function Fretboard({
   activeFilter,
   tuning,
   stringLabels,
+  isQuizMode = false,
+  onQuizFret,
+  quizClickState,
 }: Props) {
   const fretboard = useMemo(() => buildFretboard(tuning), [tuning]);
   const { noteSet, intervalMap } = useChord(selectedRoot, selectedType);
@@ -82,7 +92,7 @@ export default function Fretboard({
           );
         })}
 
-        {/* フレットマーカー */}
+        {/* インレイドット（弦より背面） */}
         {Array.from({ length: NUM_FRETS }, (_, i) => {
           const fret = i + 1;
           if (!FRET_MARKERS.has(fret)) return null;
@@ -113,6 +123,13 @@ export default function Fretboard({
             displayMode={displayMode}
             activeFilter={activeFilter}
             tuning={tuning}
+            isQuizMode={isQuizMode}
+            onQuizFret={onQuizFret}
+            quizFeedback={
+              quizClickState?.stringIndex === sIdx
+                ? { fret: quizClickState.fret, result: quizClickState.result }
+                : null
+            }
           />
         ))}
       </svg>

@@ -1,20 +1,37 @@
 import { useState } from 'react';
 import { Music, Menu, ChevronLeft } from 'lucide-react';
 import type { DisplayMode } from './types/music';
-import { DEFAULT_TUNING, STRING_LABELS } from './constants/tuning';
+import {
+  TUNINGS, TUNING_LABELS, STRING_LABELS_BY_TUNING,
+  type TuningKey,
+} from './constants/tuning';
 import Controls from './components/Controls';
 import ChordPanel from './components/ChordPanel';
 import Fretboard from './components/Fretboard';
 import Legend from './components/Legend';
+import QuizDisplay from './components/QuizDisplay';
+import { useQuiz } from './hooks/useQuiz';
 
 export default function App() {
   const [selectedRoot, setSelectedRoot] = useState('C');
   const [selectedType, setSelectedType] = useState('M');
-  // デフォルト: 度数表示
   const [displayMode, setDisplayMode] = useState<DisplayMode>('interval');
   const [activeFilter, setActiveFilter] = useState('all');
   const [panelOpen, setPanelOpen] = useState(true);
-  const tuning = DEFAULT_TUNING;
+  const [selectedTuning, setSelectedTuning] = useState<TuningKey>('standard');
+
+  const tuning = [...TUNINGS[selectedTuning]];
+  const stringLabels = [...STRING_LABELS_BY_TUNING[selectedTuning]];
+
+  const {
+    isQuizMode,
+    currentQuestion,
+    score,
+    quizClickState,
+    startQuiz,
+    stopQuiz,
+    handleQuizFret,
+  } = useQuiz(selectedRoot, selectedType, tuning);
 
   function handleRootChange(root: string) {
     setSelectedRoot(root);
@@ -24,6 +41,18 @@ export default function App() {
   function handleTypeChange(type: string) {
     setSelectedType(type);
     setActiveFilter('all');
+  }
+
+  function handleTuningChange(key: TuningKey) {
+    setSelectedTuning(key);
+  }
+
+  function handleQuizToggle() {
+    if (isQuizMode) {
+      stopQuiz();
+    } else {
+      startQuiz();
+    }
   }
 
   return (
@@ -53,16 +82,35 @@ export default function App() {
           >
             Bass Chord Visualizer
           </h1>
-          <p
-            style={{
-              fontSize: '10px',
-              color: 'var(--text-muted)',
-              margin: '2px 0 0 0',
-            }}
-          >
+          <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
             ベースコード学習アプリ
+            {isQuizMode && (
+              <span
+                style={{
+                  marginLeft: '8px',
+                  color: 'var(--quiz-correct)',
+                  fontWeight: 'bold',
+                }}
+              >
+                🎯 クイズモード中
+              </span>
+            )}
           </p>
         </div>
+        {/* チューニング表示 */}
+        <span
+          style={{
+            fontSize: '11px',
+            color: 'var(--text-muted)',
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            border: '1px solid var(--border)',
+            borderRadius: '6px',
+            padding: '3px 8px',
+            flexShrink: 0,
+          }}
+        >
+          {TUNING_LABELS[selectedTuning]}
+        </span>
       </header>
 
       {/* モバイル: アコーディオントグルボタン */}
@@ -76,10 +124,10 @@ export default function App() {
       </button>
 
       <div className="app-body">
-        {/* サイドパネル (デスクトップ: サイドバー / モバイル: アコーディオン) */}
+        {/* サイドパネル */}
         <aside className={`app-panel${panelOpen ? ' open' : ''}`}>
           <div className="panel-inner">
-            {/* デスクトップ専用: パネル内閉じるボタン */}
+            {/* デスクトップ専用: 閉じるボタン */}
             <div className="panel-close-row">
               <button
                 className="panel-close-btn"
@@ -95,17 +143,24 @@ export default function App() {
               selectedRoot={selectedRoot}
               selectedType={selectedType}
               displayMode={displayMode}
+              selectedTuning={selectedTuning}
+              isQuizMode={isQuizMode}
               onRootChange={handleRootChange}
               onTypeChange={handleTypeChange}
               onDisplayModeChange={setDisplayMode}
+              onTuningChange={handleTuningChange}
+              onQuizToggle={handleQuizToggle}
             />
 
-            <ChordPanel
-              selectedRoot={selectedRoot}
-              selectedType={selectedType}
-              activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
-            />
+            {/* クイズモード中はコードパネル不要（問題がある） */}
+            {!isQuizMode && (
+              <ChordPanel
+                selectedRoot={selectedRoot}
+                selectedType={selectedType}
+                activeFilter={activeFilter}
+                onFilterChange={setActiveFilter}
+              />
+            )}
 
             <Legend />
           </div>
@@ -113,16 +168,25 @@ export default function App() {
 
         {/* 指板エリア */}
         <main className="app-fretboard">
-          <p
-            style={{
-              fontSize: '11px',
-              color: 'var(--text-muted)',
-              marginBottom: '10px',
-              flexShrink: 0,
-            }}
-          >
-            フレットをクリックすると音が鳴ります
-          </p>
+          {/* クイズモード: 問題表示 */}
+          {isQuizMode && (
+            <QuizDisplay question={currentQuestion} score={score} />
+          )}
+
+          {/* 通常モード: ヒントテキスト */}
+          {!isQuizMode && (
+            <p
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                marginBottom: '10px',
+                flexShrink: 0,
+              }}
+            >
+              フレットをクリックすると音が鳴ります
+            </p>
+          )}
+
           <div
             style={{ overflowX: 'auto', overflowY: 'hidden', flex: 1 }}
             className="fretboard-scroll"
@@ -133,7 +197,10 @@ export default function App() {
               displayMode={displayMode}
               activeFilter={activeFilter}
               tuning={tuning}
-              stringLabels={STRING_LABELS}
+              stringLabels={stringLabels}
+              isQuizMode={isQuizMode}
+              onQuizFret={handleQuizFret}
+              quizClickState={quizClickState}
             />
           </div>
         </main>

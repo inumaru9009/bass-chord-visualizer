@@ -4,15 +4,26 @@ import { FRET_WIDTH, LEFT_MARGIN, TOP_MARGIN, STRING_HEIGHT, DOT_RADIUS } from '
 import { NUM_FRETS } from '../../constants/tuning';
 import { playNote } from '../../lib/audio';
 
+interface QuizFeedback {
+  fret: number;
+  result: 'correct' | 'wrong';
+}
+
 interface Props {
   stringIndex: number;
   label: string;
   notes: string[];                       // [フレット0..N] のピッチクラス
   chordNoteSet: Set<string>;
-  intervalMap: Record<string, string>;   // ピッチクラス → 度数ラベル（useChord 由来）
+  intervalMap: Record<string, string>;   // ピッチクラス → 度数ラベル
   displayMode: DisplayMode;
   activeFilter: string;
   tuning: string[];
+  /** クイズモード中は true */
+  isQuizMode?: boolean;
+  /** クイズモード中のフレットクリック通知 */
+  onQuizFret?: (stringIndex: number, fret: number) => void;
+  /** このStringRowに該当するクイズフィードバック */
+  quizFeedback?: QuizFeedback | null;
 }
 
 export default function StringRow({
@@ -24,11 +35,21 @@ export default function StringRow({
   displayMode,
   activeFilter,
   tuning,
+  isQuizMode = false,
+  onQuizFret,
+  quizFeedback,
 }: Props) {
   const y = TOP_MARGIN + stringIndex * STRING_HEIGHT + STRING_HEIGHT / 2;
-  // 1弦(G,index 0)=1.2px → 4弦(E,index 3)=3.5px に差別化
+  // 1弦(G,index 0)=1.2px → 4弦(E,index 3)=3.5px
   const STRING_THICKNESSES = [1.2, 1.8, 2.5, 3.5];
   const stringThickness = STRING_THICKNESSES[stringIndex] ?? 1.5;
+
+  /** フレットの中心X座標を返す */
+  function fretCx(fret: number): number {
+    return fret === 0
+      ? LEFT_MARGIN + FRET_WIDTH * 0.25
+      : LEFT_MARGIN + (fret - 0.5) * FRET_WIDTH;
+  }
 
   return (
     <g>
@@ -56,57 +77,89 @@ export default function StringRow({
         strokeWidth={stringThickness}
       />
 
-      {/* コードトーンのドット */}
-      {notes.map((noteName, fret) => {
-        if (!chordNoteSet.has(noteName)) return null;
-
-        // intervalMap は Tonal.js の Chord.get().intervals から構築済み
-        const intervalLabel = intervalMap[noteName];
-        if (!intervalLabel) return null;
-
-        if (activeFilter !== 'all' && intervalLabel !== activeFilter) return null;
-
-        const cx =
-          fret === 0
-            ? LEFT_MARGIN + FRET_WIDTH * 0.25
-            : LEFT_MARGIN + (fret - 0.5) * FRET_WIDTH;
+      {/* ── クイズモード ───────────────────────────────────── */}
+      {isQuizMode && notes.map((_, fret) => {
+        const cx = fretCx(fret);
+        const isFeedbackHere = quizFeedback?.fret === fret;
 
         return (
-          <NoteDot
-            key={fret}
-            cx={cx}
-            cy={y}
-            intervalLabel={intervalLabel}
-            noteName={noteName}
-            displayMode={displayMode}
-            onClick={() => playNote(stringIndex, fret, tuning)}
-          />
+          <g key={fret}>
+            {/* フィードバックドット */}
+            {isFeedbackHere && (
+              <circle
+                cx={cx}
+                cy={y}
+                r={DOT_RADIUS}
+                fill={
+                  quizFeedback?.result === 'correct'
+                    ? 'var(--quiz-correct)'
+                    : 'var(--quiz-wrong)'
+                }
+                className={
+                  quizFeedback?.result === 'correct' ? 'dot-correct' : 'dot-wrong'
+                }
+              />
+            )}
+            {/* クリック可能な透明ヒットエリア */}
+            <circle
+              cx={cx}
+              cy={y}
+              r={DOT_RADIUS}
+              fill="transparent"
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                playNote(stringIndex, fret, tuning);
+                onQuizFret?.(stringIndex, fret);
+              }}
+            >
+              <title>{notes[fret]}</title>
+            </circle>
+          </g>
         );
       })}
 
-      {/* 非コードトーンのヒットエリア（クリックで音を鳴らす） */}
-      {notes.map((noteName, fret) => {
-        if (chordNoteSet.has(noteName)) return null;
+      {/* ── 通常モード ─────────────────────────────────────── */}
+      {!isQuizMode && (
+        <>
+          {/* コードトーンのドット */}
+          {notes.map((noteName, fret) => {
+            if (!chordNoteSet.has(noteName)) return null;
+            const intervalLabel = intervalMap[noteName];
+            if (!intervalLabel) return null;
+            if (activeFilter !== 'all' && intervalLabel !== activeFilter) return null;
 
-        const cx =
-          fret === 0
-            ? LEFT_MARGIN + FRET_WIDTH * 0.25
-            : LEFT_MARGIN + (fret - 0.5) * FRET_WIDTH;
+            return (
+              <NoteDot
+                key={fret}
+                cx={fretCx(fret)}
+                cy={y}
+                intervalLabel={intervalLabel}
+                noteName={noteName}
+                displayMode={displayMode}
+                onClick={() => playNote(stringIndex, fret, tuning)}
+              />
+            );
+          })}
 
-        return (
-          <circle
-            key={`hit-${fret}`}
-            cx={cx}
-            cy={y}
-            r={DOT_RADIUS}
-            fill="transparent"
-            style={{ cursor: 'pointer' }}
-            onClick={() => playNote(stringIndex, fret, tuning)}
-          >
-            <title>{noteName}</title>
-          </circle>
-        );
-      })}
+          {/* 非コードトーンのヒットエリア（クリックで音を鳴らす） */}
+          {notes.map((noteName, fret) => {
+            if (chordNoteSet.has(noteName)) return null;
+            return (
+              <circle
+                key={`hit-${fret}`}
+                cx={fretCx(fret)}
+                cy={y}
+                r={DOT_RADIUS}
+                fill="transparent"
+                style={{ cursor: 'pointer' }}
+                onClick={() => playNote(stringIndex, fret, tuning)}
+              >
+                <title>{noteName}</title>
+              </circle>
+            );
+          })}
+        </>
+      )}
     </g>
   );
 }
