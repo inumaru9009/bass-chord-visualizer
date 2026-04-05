@@ -252,6 +252,123 @@ body {
   scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
 }
 
+/* ── モード切替タブ ──────────────────────────────────────── */
+.mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+}
+
+.mode-tab {
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mode-tab.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+.mode-tab:hover:not(.active) {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}
+
+/* ── TrainingMode レイアウト ─────────────────────────────── */
+.training-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.training-question-area {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.training-start-prompt {
+  color: var(--text-muted);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.training-fretboard-area {
+  width: 100%;
+}
+
+.training-controls-area {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+/* ── マイクインジケーター ────────────────────────────────── */
+.mic-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  margin-top: 10px;
+  border-radius: 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+}
+
+.mic-detected-note {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--accent);
+  min-width: 2ch;
+  text-align: center;
+  line-height: 1;
+}
+
+.mic-clarity-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mic-clarity-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.1s ease;
+}
+
+.mic-status {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.mic-status.listening {
+  color: var(--accent);
+}
+
+.mic-error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
 /* サイドバー内スクロールバー */
 .app-panel::-webkit-scrollbar {
   width: 4px;
