@@ -56,7 +56,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout mode-${appMode}`}>
       {/* ヘッダー */}
       <header className="app-header">
         <Music size={20} style={{ color: 'var(--accent)', flexShrink: 0 }} />

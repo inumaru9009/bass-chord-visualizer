@@ -115,6 +115,12 @@ body {
 /* ── デスクトップ (768px+) ──────────────────────────────── */
 @media (min-width: 768px) {
   .app-layout {
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  /* ExploreモードはPCで2カラム固定レイアウトを維持 */
+  .app-layout.mode-explore {
     height: 100vh;
     overflow: hidden;
   }
