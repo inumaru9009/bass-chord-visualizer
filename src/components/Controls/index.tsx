@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { DisplayMode } from '../../types/music';
+import type { InputMethod } from '../../hooks/useQuiz';
 import { ROOT_NOTES, CHORD_TYPES } from '../../lib/musicTheory';
 import { TUNINGS, TUNING_LABELS, type TuningKey } from '../../constants/tuning';
 import { useChordValidation } from '../../hooks/useChordValidation';
@@ -13,12 +14,16 @@ interface Props {
   selectedTuning: TuningKey;
   selectedPosition: string;
   isQuizMode: boolean;
+  inputMethod: InputMethod;
+  /** falseのときクイズ関連UIを非表示にする（ExploreMode用）。デフォルトtrue */
+  showQuizControls?: boolean;
   onRootChange: (root: string) => void;
   onTypeChange: (type: string) => void;
   onDisplayModeChange: (mode: DisplayMode) => void;
   onTuningChange: (key: TuningKey) => void;
   onPositionChange: (id: string) => void;
   onQuizToggle: () => void;
+  onInputMethodChange: (m: InputMethod) => void;
 }
 
 export default function Controls({
@@ -28,12 +33,15 @@ export default function Controls({
   selectedTuning,
   selectedPosition,
   isQuizMode,
+  inputMethod,
+  showQuizControls = true,
   onRootChange,
   onTypeChange,
   onDisplayModeChange,
   onTuningChange,
   onPositionChange,
   onQuizToggle,
+  onInputMethodChange,
 }: Props) {
   const { validRoots, validTypes } = useChordValidation(selectedRoot, selectedType);
   const [tuningOpen, setTuningOpen] = useState(false);
@@ -198,19 +206,41 @@ export default function Controls({
         </div>
       </div>
 
-      {/* クイズモード */}
-      <div>
-        <button
-          onClick={onQuizToggle}
-          className={`w-full h-10 rounded-xl text-sm font-bold transition-colors ${
-            isQuizMode
-              ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-          }`}
-        >
-          {isQuizMode ? '✅ クイズモード終了' : '🎯 クイズモード開始'}
-        </button>
-      </div>
+      {/* クイズモード（ExploreMode では非表示） */}
+      {showQuizControls && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button
+            onClick={onQuizToggle}
+            className={`w-full h-10 rounded-xl text-sm font-bold transition-colors ${
+              isQuizMode
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+            }`}
+          >
+            {isQuizMode ? '✅ クイズモード終了' : '🎯 クイズモード開始'}
+          </button>
+
+          {/* 入力方法切替（クイズモード中のみ表示） */}
+          {isQuizMode && (
+            <div className="flex gap-2">
+              {(['tap', 'mic'] as InputMethod[]).map((method) => (
+                <button
+                  key={method}
+                  onClick={() => onInputMethodChange(method)}
+                  className="flex-1 h-9 rounded-lg text-sm font-medium transition-colors"
+                  style={
+                    inputMethod === method
+                      ? { backgroundColor: 'var(--accent)', color: '#000' }
+                      : { backgroundColor: 'rgb(51 65 85)', color: 'rgb(203 213 225)' }
+                  }
+                >
+                  {method === 'tap' ? '👆 タップ' : '🎙️ マイク'}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

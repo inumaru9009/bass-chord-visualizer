@@ -82,6 +82,7 @@ export function ExploreMode({
               selectedPosition={selectedPosition}
               isQuizMode={false}
               inputMethod="tap"
+              showQuizControls={false}
               onRootChange={onRootChange}
               onTypeChange={onTypeChange}
               onDisplayModeChange={onDisplayModeChange}
