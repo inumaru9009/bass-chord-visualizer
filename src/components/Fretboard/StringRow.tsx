@@ -4,6 +4,9 @@ import { FRET_WIDTH, LEFT_MARGIN, TOP_MARGIN, STRING_HEIGHT, DOT_RADIUS } from '
 import { NUM_FRETS } from '../../constants/tuning';
 import { playNote } from '../../lib/audio';
 
+/** タップ判定エリアの上下拡張量（モバイルでのタップ精度改善） */
+const HIT_PADDING = 12;
+
 interface QuizFeedback {
   fret: number;
   result: 'correct' | 'wrong';
@@ -81,6 +84,8 @@ export default function StringRow({
       {isQuizMode && notes.map((_, fret) => {
         const cx = fretCx(fret);
         const isFeedbackHere = quizFeedback?.fret === fret;
+        // フレット左端X（rect の x 基点）
+        const rx = cx - FRET_WIDTH / 2;
 
         return (
           <g key={fret}>
@@ -100,11 +105,12 @@ export default function StringRow({
                 }
               />
             )}
-            {/* クリック可能な透明ヒットエリア */}
-            <circle
-              cx={cx}
-              cy={y}
-              r={DOT_RADIUS}
+            {/* タップ判定エリア（上下 HIT_PADDING 拡張） */}
+            <rect
+              x={rx}
+              y={y - STRING_HEIGHT / 2 - HIT_PADDING}
+              width={FRET_WIDTH}
+              height={STRING_HEIGHT + HIT_PADDING * 2}
               fill="transparent"
               style={{ cursor: 'pointer' }}
               onClick={() => {
@@ -113,7 +119,7 @@ export default function StringRow({
               }}
             >
               <title>{notes[fret]}</title>
-            </circle>
+            </rect>
           </g>
         );
       })}
@@ -144,18 +150,20 @@ export default function StringRow({
           {/* 非コードトーンのヒットエリア（クリックで音を鳴らす） */}
           {notes.map((noteName, fret) => {
             if (chordNoteSet.has(noteName)) return null;
+            const cx = fretCx(fret);
             return (
-              <circle
+              <rect
                 key={`hit-${fret}`}
-                cx={fretCx(fret)}
-                cy={y}
-                r={DOT_RADIUS}
+                x={cx - FRET_WIDTH / 2}
+                y={y - STRING_HEIGHT / 2 - HIT_PADDING}
+                width={FRET_WIDTH}
+                height={STRING_HEIGHT + HIT_PADDING * 2}
                 fill="transparent"
                 style={{ cursor: 'pointer' }}
                 onClick={() => playNote(stringIndex, fret, tuning)}
               >
                 <title>{noteName}</title>
-              </circle>
+              </rect>
             );
           })}
         </>

@@ -1,11 +1,14 @@
-import type { Question } from '../../hooks/useQuiz';
+import type { Question, InputMethod } from '../../hooks/useQuiz';
+import type { PitchDetectionResult } from '../../hooks/usePitchDetection';
 
 interface Props {
   question: Question | null;
   score: { correct: number; total: number };
+  inputMethod: InputMethod;
+  micState: PitchDetectionResult;
 }
 
-export default function QuizDisplay({ question, score }: Props) {
+export default function QuizDisplay({ question, score, inputMethod, micState }: Props) {
   const accuracy =
     score.total > 0 ? Math.round((score.correct / score.total) * 100) : null;
 
@@ -51,9 +54,38 @@ export default function QuizDisplay({ question, score }: Props) {
           )}
         </span>
         <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-          フレットをクリックして答えよう
+          {inputMethod === 'mic' ? '🎙️ ベースで弾いて答えよう' : 'フレットをクリックして答えよう'}
         </span>
       </div>
+
+      {/* マイクインジケーター（マイクモード時のみ） */}
+      {inputMethod === 'mic' && (
+        <div className="mic-indicator">
+          {micState.error === 'permission_denied' && (
+            <p className="mic-error">⚠️ マイクの許可が必要です</p>
+          )}
+          {micState.error === 'not_supported' && (
+            <p className="mic-error">⚠️ このブラウザはマイク非対応です</p>
+          )}
+          {!micState.error && (
+            <>
+              <span className={`mic-status${micState.isListening ? ' listening' : ''}`}>
+                {micState.isListening ? '🎙️ 聴いています…' : '⏳ 起動中…'}
+              </span>
+              {micState.detectedNote && (
+                <span className="mic-detected-note">{micState.detectedNote}</span>
+              )}
+              {/* clarityバー: 低音域では0.9以上が正常 */}
+              <div className="mic-clarity-bar">
+                <div
+                  className="mic-clarity-fill"
+                  style={{ width: `${micState.clarity * 100}%` }}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

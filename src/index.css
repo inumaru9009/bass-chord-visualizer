@@ -24,12 +24,14 @@ body {
 
 #root {
   min-height: 100vh;
+  min-height: 100svh;
 }
 
 /* ── 2カラム レイアウト ─────────────────────────────────── */
 
 .app-layout {
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
@@ -116,12 +118,14 @@ body {
 @media (min-width: 768px) {
   .app-layout {
     min-height: 100vh;
+    min-height: 100svh;
     overflow: visible;
   }
 
   /* ExploreモードはPCで2カラム固定レイアウトを維持 */
   .app-layout.mode-explore {
     height: 100vh;
+    height: 100svh;
     overflow: hidden;
   }
 

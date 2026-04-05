@@ -57,7 +57,12 @@ export default function Fretboard({
   const isFiltered = fretMin !== 0 || fretMax !== NUM_FRETS;
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto' }} className="fretboard-scroll">
+    <div
+      style={{ overflowX: 'auto', overflowY: 'visible', WebkitOverflowScrolling: 'touch' }}
+      className="fretboard-scroll"
+    >
+      {/* minWidth でモバイルでもSVGが縮小されないことを保証 */}
+      <div style={{ minWidth: `${svgWidth}px` }}>
       <svg
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         width="100%"
@@ -174,6 +179,7 @@ export default function Fretboard({
           </>
         )}
       </svg>
+      </div>
     </div>
   );
 }
